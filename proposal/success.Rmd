@@ -3,28 +3,71 @@
 Projects should have a definition of done that is measurable, and a thorough understanding going in of what the risks are to delivery 
 -->
 
+The project is succesful if an R package is available on CRAN (source, OSX and Windows binaries) that
+
+* provides comprehensive geodetic geometry operations, addressing the flaws stated in the "problem" section
+* provides spatial indexes on the sphere to users of the R packages `sf` and `stars`
+* this project is documented, and blogs on r-spatial.org have informed users about it
+
 ## Definition of done
 <!-- 
 What does success look like? 
 -->
+
+The project is finished when an R package is on CRAN that provides:
+
+* conversion functions from S2geometry classes to and from simple features
+* interfaces for R methods to S2geometry geodetic geometry functions 
+* R support for spatial indexes on the spere
+* geodetic coordinate support for `stars` regular, rectilinear, and curvilinear grids
+* documentation in the form of package vignettes
+
+and when the promised blogs have appeared on r-spatial.org.
 
 ## Measuring success
 <!-- 
 How will we know when success is achieved, what markers can we use along the way 
 -->
 
+* The blogs on r-spatial will indicate the project progress
+* The R package will be developed on a GitHub repository under the
+r-spatial organisation, issues and commit messages can be tracked
+to see the project status
+* Regular reports to the R consortium will be provided
+
 ## Future work
 <!-- 
 How could this be extended / developed in the future by yourself and/or the community in general?
 -->
 
+We believe that this proposal is an important step in the direction
+of a modern, coherent and robust ecosystem of R packages for spatial
+data science. Follow-up steps to which this proposal will positively
+contribute include:
+
+* improved support for coordinate reference system (following the
+new features in PROJ 7.0.0 and support of the WKT2 standard by
+GDAL 2.5.0)
+* improved plotting capabilities with more generic and flexible,
+potentially automatic handling of projections chosen on the fly
+(e.g. by a virtual globe interface to massive image collections,
+similar to Google Earth Engine)
+
 ## Key risks
 <!-- 
 What sort of things could come up that can delay or break the project?
-
  - [ ] People
  - [ ] Processes
  - [ ] Tooling & Technology
  - [ ] Costs
-
 -->
+
+Risks that we can think of now include:
+
+* The S2geometry library has dependencies that are difficult to port to CRAN Windows or OSX
+* Mapping simple features to S2geometry data structures will impose difficulties
+
+Both risks should be low-moderate: The s2 CRAN package is a proof of
+concept for the first, the second one should be overcome by reading
+documentation and asking questions on the appropriate google group
+for S2geometry users/developers.
