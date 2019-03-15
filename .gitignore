@@ -14,5 +14,3 @@ vignettes/*.pdf
 .Rproj.user
 
 # File gen artefacts
-*.html
-*.pdf
