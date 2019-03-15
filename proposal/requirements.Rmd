@@ -3,32 +3,41 @@
 An idea of what is required to make the project actually happen
 -->
 
+The problem is very clear and evident; the solution path is too.
+There are no external requirements that have to be fulfilled to
+make this project actually happen.
+
 ## People
 <!--
 Who needs to be involved, what's the proposed structure, what will it take to get their involvement?
 -->
+
+The actual programming will be done by Edzer Pebesma. Roger Bivand and Michael Sumner will play an advisory role, will be shared in discussions about the API to choose, and will be asked to test.
 
 ## Processes
 <!-- 
 What processes need to be put in place e.g. codes of conduct, regular ISC meetings, handover to the community at large?
 -->
 
-## Tools & Tech
-<!--
-What is going to be needed to deliver this project? 
-
-Will cloud computing be used - if yes are there are necessary components that will be deciding factors between providers?
-
-Are there tools or tech that don't exist that will be produced to facilitate the project?
--->
+A code of conduct, similar to the one currently in place for package `sf` will be used. The code will be developed under the Apache 2.0 license.
+The s2geometry library is also available under the same license.
 
 ## Funding
 <!-- 
 [TO DO] THE GUIDANCE IS PRETTY UNCLEAR, ESP IN LIGHT OF GABOR'S PROPOSAL VS AWARD SIZE
-
 -->
+
+For the realisation of this project, US \$ 10,000 is requested.
 
 ## Summary
 <!--
 A summary of the requirements that contextualises the costs
 -->
+
+The costs breakdown is as follows:
+
+* writing conversion functions from S2geometry classes to and from simple features: \$ 2500
+* interfacing S2geometry functions to R methods: \$ 2000
+* R support for spatial indexing on the spere: \$ 2000
+* writing geodetic coordinate support for `stars` regular, rectilinear, and curvilinear grids: \$ 2500
+* writing documentation (pkgdown site, vignettes) \$ 1000

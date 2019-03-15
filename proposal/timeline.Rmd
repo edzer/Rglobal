@@ -10,6 +10,17 @@ Covering the planning phase, this section should provide a relatively detailed p
  - [ ] Reporting framework
 -->
 
+The project will run from Jul 1st, 2019 to Apr 1st, 2020.  Licence
+will be all Apache 2.0 (The S2geometry library is also licenced
+under Apache 2.0).
+
+Regular, quarterly reports will be given to the R Consortium. The
+user community will be informed by a series of blogs on the
+[r-spatial.org](https://www.r-spatial.org/) blog:
+
+* one blog outlining the project's ambitions
+* at least one blog on progress, halfway the realisation, at moments when more user involvement is sought
+* a final blog will report on what has been realised when the project has finished 
 
 ## Technical delivery
 <!--
@@ -17,6 +28,10 @@ Covering the actual delivery of the project this section should provide at least
 
 Including target dates is really important as you need to be committed and the ISC need to have a means of tracking delivery
 -->
+
+The project will deliver an R package that contains the S2geometry
+C++ library, and interfaces it to the modern stack of spatial
+packages (`sf`, `stars` and downstream, including `ggplot::geom_sf`).
 
 ## Other aspects
 <!--
@@ -28,3 +43,9 @@ Covering non-technical activities like on-going publicity, paper preparation, di
  - [ ] UseR!
  - [ ] ISC meetings
 -->
+
+Blog posts on r-spatial.org will announce and report on progress.
+Attention to the project will be drawn on Twitter, in particular
+when new blog posts are published on r-spatial.org.  Progress will
+presented at the UseR! 2020 meeting in Saint Louis or at the
+rstudio::conf meeting in San Francisco.

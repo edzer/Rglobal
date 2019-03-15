@@ -10,4 +10,81 @@ It is important to cover:
  - [ ] Why it should be tackled
 -->
 
+Most spatial data today comes with _geodetic_ coordinates, expressed
+as degrees longitude and latitude, associated with some reference
+ellipsoid (typically WGS84), denoting locations on an ellipsoidal
+body. Most of the R software used to analyse these data assumes
+that locations denote two-dimensional _Cartesian_ coordinates,
+coordinates on a flat 2-D space, i.e. that the data are projected.
+Projection distorts areas, distances and/or directions, and does
+this more so when the the geographical area considered is larger.
+Ideally, one would analyse the data as they are, points on an
+ellipsoid, only project when needed (i.e. when plotting), choosing
+appropriate projections by default.
+
+This problem affects all data scientists who are faced with
+spatial data that come with geodetic coordinates (degrees
+longitude/latitude). In particular it affects those who are not
+well versed in the problem of choosing a projection appropriate to
+their problem. We think that this is the case for the majority of
+data scientists today.
+
+More in detail, we will demonstrate two simple problems. In the first,
+we show that a line crossing the dateline seems to not cross it, but
+rather cross the entire Earth:
+```
+> library(sf)
+Linking to GEOS 3.7.0, GDAL 2.3.2, PROJ 5.2.0
+> line = st_as_sfc("LINESTRING(-179 50, 179 50)", crs = 4326) # crossing dateline
+> dateline = st_as_sfc("LINESTRING(180 0, 180 90)", crs = 4326)
+> st_intersects(line, dateline) # do they cross?
+although coordinates are longitude/latitude, st_intersects assumes that they are planar
+Sparse geometry binary predicate list of length 1, where the predicate was `intersects'
+ 1: (empty)
+> st_bbox(line) # spans the entire Earth:
+xmin ymin xmax ymax
+-179   50  179   50
+```
+In another problem, a polygon spanning the North Pole does not include the pole:
+```
+> pol = st_as_sfc("POLYGON((0 80, 120 80, 240 80, 0 80))", crs = 4326)
+> st_bbox(pol) # a line, essentially
+xmin ymin xmax ymax
+   0   80  240   80
+> pt = st_as_sfc("POINT(0 90)", crs = 4326)
+> st_intersects(pol, pt) # polygon does not include pole?
+although coordinates are longitude/latitude, st_intersects assumes that they are planar
+Sparse geometry binary predicate list of length 1, where the predicate was `intersects'
+ 1: (empty)
+```
+In both cases warnings are emitted, but answers are plainly wrong. 
+
+Further problems, connected to this are:
+
+* an essential feature of current handling of _all_ spatial data is the _bounding
+box_, which is computed by finding the minimum and maximum geodetic coordinate
+values; on a sphere this box does not yield a region that contains the geometry. The
+natural definition of a region on a sphere is that of a _cap_,
+defined by a center point and a radius (angle).
+* having a good measure for the bounding _cap_ is needed to inform the PROJ 6
+and the upcoming PROJ 7 library to choose ellipses for more accurate reprojection
+* all spatial indexes now provided by `sf` and `stars` assume
+two-dimensional Cartesian coordinates; this also misses connectedness
+across antimeridian (180 degree West) and poles.
+* `sf::st_graticule`, used by all plotting functions including `ggplot2::geom_sf` is
+now a fragile function that uses a lot of heuristics; with proper geodetic geometry
+operations it can be implemented much more robustly
+
+Previous attempts to this problem include:
+
+* package `sf` warns the user when it makes the assumption that _geodetic_ coordinates are taken as _Cartesian_ coordinates; for small areas in many cases this is acceptable, but the software doesn't help distinguishing these cases from those where it is not acceptable.
+* package `lwgeom` extends the `sf` package with functions found in the geometry engine empowering PostGIS (liblwgeom), and provides several functions that correctly computes ellipsoidal measures (e.g. distance, area); it is used by `sf` when needed. Liblwgeom is an incomplete implementation of spherical geometries, and does not provide e.g. geodetic unions, intersections or buffers.
+
+This problem should be tackled because a majority of spatial data users
+
+* now get a warning too often, will start ignoring it, also when it should not be ignored
+* are unlikely to properly teach themselves the reprojections currently needed to tackle problems
+* will find that modern systems including [BigQuery GIS](https://cloud.google.com/bigquery/docs/gis), [Google Maps](https://maps.google.com) or [Google Earth Engine](https://earthengine.google.com/) have resolved this problem.
+
+It should also be tackled because it _can_ be tackled: the library empowering these modern systems, [s2geometry](https://s2geometry.io/), is open source, well maintained and documented, and [can be ported to R](https://cran.r-project.org/web/packages/s2/index.html).
 

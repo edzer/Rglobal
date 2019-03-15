@@ -8,6 +8,24 @@ This is where the proposal should be outlined.
 At a high-level address what your proposal is and how it will address the problem identified. Highlight any benefits to the R Community that follow from solving the problem. This should be your most compelling section.
 -->
 
+R-global will complement the modern R-spatial stack (packages
+`sf` for points/lines/polygons and `stars` for raster data) to
+correctly handle datasets with geodetic coordinates (degrees
+longitude/latitude) and no longer require the conversion to
+appropriate projections for this. This affects the analysis of all
+datasets that are global as well as local datasets that cover the
+North or South poles or the antimeridian (the -180 degree meridian).
+It will also give better results for datasets spanning larger areas,
+and pave the way for plotting defaults that do not have latitude and
+longitude as perpendicular axes (but e.g.  azimuthal perspective or
+orthographic projections, those that give the illusion of looking
+at the Earth from space).
+
+It will do so by developing an R package that uses the s2geometry
+open source library to provide all geodetic geometry functions
+required for this. Packages `sf` and `stars` will use this package
+whenever required.
+
 ## Detail
 <!--
 Go into more detail about the specifics of the project and it delivers against the problem.
@@ -18,3 +36,21 @@ Depending on project type the detail section should include:
  - [ ] Architecture
  - [ ] Assumptions
 -->
+
+The minimum viable product is an R package that 
+
+* uses the [s2geometry](https://s2geometry.io/) library to provide functions
+for `st_intersects`, `st_contains`, `st_intersection`, `st_union` and all other
+available binary predicates and geometry operations currently provided by `sf`, for simple
+feature geometries having geodetic coordinates,
+* provides an alternative to the handling of bounding boxes for data with
+geodetic coordinates by using caps (a center point and a radius).
+
+The architecture will be kept simple:
+
+* C++ functions (using `Rcpp`) will be written to convert between the `s2geometry` data structures and R simple feature geometries
+* `Rcpp` will be used to write wrapper functions around the `s2geomety` classes and methods, such that they work on simple feature geometries
+* `sf` and `stars` functions will use the new package when it is available, or otherwise emit warnings when appropriate (as they now do)
+* `sf::st_graticule` will use the new functionality when available
+
+Users of `sf`, `stars` (now at 110K and 10K downloads per month, respectively) and downstream packages will automatically adopt the new functionality once the new package is on CRAN and binaries are available for all platforms (OSX, Windows).
