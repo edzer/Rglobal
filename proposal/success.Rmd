@@ -7,7 +7,7 @@ The project is succesful if an R package is available on CRAN (source, OSX and W
 
 * provides comprehensive geodetic geometry operations, addressing the flaws stated in the "problem" section
 * provides spatial indexes on the sphere to users of the R packages `sf` and `stars`
-* this project is documented, and blogs on r-spatial.org have informed users about it
+* is well documented, and blogs on r-spatial.org and tweets have informed users about it
 
 ## Definition of done
 <!-- 
@@ -16,8 +16,8 @@ What does success look like?
 
 The project is finished when an R package is on CRAN that provides:
 
-* conversion functions from S2geometry classes to and from simple features
-* interfaces for R methods to S2geometry geodetic geometry functions 
+* conversion functions from `S2 Geometry` classes to and from simple features
+* interfaces for R methods to `S2 Geometry` geodetic geometry functions 
 * R support for spatial indexes on the spere
 * geodetic coordinate support for `stars` regular, rectilinear, and curvilinear grids
 * documentation in the form of package vignettes
@@ -31,7 +31,7 @@ How will we know when success is achieved, what markers can we use along the way
 
 * The blogs on r-spatial will indicate the project progress
 * The R package will be developed on a GitHub repository under the
-r-spatial organisation, issues and commit messages can be tracked
+r-spatial organisation, so that issues and commit messages can be tracked
 to see the project status
 * Regular reports to the R consortium will be provided
 
@@ -47,11 +47,14 @@ contribute include:
 
 * improved support for coordinate reference system (following the
 new features in PROJ 7.0.0 and support of the WKT2 standard by
-GDAL 2.5.0)
+GDAL 2.5.0);
 * improved plotting capabilities with more generic and flexible,
 potentially automatic handling of projections chosen on the fly
 (e.g. by a virtual globe interface to massive image collections,
-similar to Google Earth Engine)
+similar to Google Earth Engine);
+* various spatial analysis packages will be able to benefit from
+the functionality of the new package, including `spatstat`, `gstat`
+and many others.
 
 ## Key risks
 <!-- 
@@ -64,10 +67,10 @@ What sort of things could come up that can delay or break the project?
 
 Risks that we can think of now include:
 
-* The S2geometry library has dependencies that are difficult to port to CRAN Windows or OSX
-* Mapping simple features to S2geometry data structures will impose difficulties
+* The `S2 Geometry` library has dependencies that are difficult to port to CRAN Windows or OSX
+* Mapping simple features to `S2 Geometry` data structures will impose difficulties
 
-Both risks should be low-moderate: The s2 CRAN package is a proof of
-concept for the first, the second one should be overcome by reading
-documentation and asking questions on the appropriate google group
-for S2geometry users/developers.
+Both risks should be low-moderate: The s2 package currently on
+CRAN is a proof of concept for the first, the second one should
+be overcome by reading documentation and asking questions on the
+appropriate google group for S2geometry users/developers.

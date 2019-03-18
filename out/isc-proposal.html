@@ -11,7 +11,7 @@
 
 <meta name="author" content="Edzer Pebesma" />
 
-<meta name="date" content="2019-03-15" />
+<meta name="date" content="2019-03-18" />
 
 <title>R-global: analysing spatial data globally</title>
 
@@ -187,38 +187,17 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">R-global: analysing spatial data globally</h1>
 <h4 class="author"><em>Edzer Pebesma</em></h4>
-<h4 class="date"><em>2019-03-15</em></h4>
+<h4 class="date"><em>2019-03-18</em></h4>
 
 </div>
 
 
-<div id="signatories" class="section level1">
-<h1>Signatories</h1>
-<!-- 
-This section provides the ISC with a view of the support received from the community for a proposal. Acceptance isn't predicated on popularity but community acceptance is important.  Willingness to accept outside input is also a good marker for project delivery. 
-
-An optional section would be for R-Core signatories where changes to R are proposed.
--->
 <div id="project-team" class="section level2">
 <h2>Project team</h2>
 <!-- 
 Who are the people responsible for actually delivering the project if the proposal gets accepted and are already signed up and rearing to go?
 -->
-<p>Edzer Pebesma, Roger Bivand, Michael Sumner, Jeroen Ooms</p>
-</div>
-<div id="contributors" class="section level2">
-<h2>Contributors</h2>
-<!-- 
-Who are the people who have actively helped with this proposal but won't necessarily be on the core project team later?
--->
-</div>
-<div id="consulted" class="section level2">
-<h2>Consulted</h2>
-<!-- 
-Who has been given the opportunity to provide feedback on the proposal? This should include any R Consortium & ISC members who the proposal has been discussed with.
--->
-<p>Ege Rubak</p>
-</div>
+<p>Edzer Pebesma, Roger Bivand, Michael Sumner, Ege Rubak and Jeroen Ooms</p>
 </div>
 <div id="the-problem" class="section level1">
 <h1>The Problem</h1>
@@ -234,16 +213,16 @@ It is important to cover:
 -->
 <p>Most spatial data today comes with <em>geodetic</em> coordinates, expressed as degrees longitude and latitude, associated with some reference ellipsoid (typically WGS84), denoting locations on an ellipsoidal body. Most of the R software used to analyse these data assumes that locations denote two-dimensional <em>Cartesian</em> coordinates, coordinates on a flat 2-D space, i.e. that the data are projected. Projection distorts areas, distances and/or directions, and does this more so when the the geographical area considered is larger. Ideally, one would analyse the data as they are, points on an ellipsoid, only project when needed (i.e. when plotting), choosing appropriate projections by default.</p>
 <p>This problem affects all data scientists who are faced with spatial data that come with geodetic coordinates (degrees longitude/latitude). In particular it affects those who are not well versed in the problem of choosing a projection appropriate to their problem. We think that this is the case for the majority of data scientists today.</p>
-<p>More in detail, we will demonstrate two simple problems. In the first, we show that a line crossing the dateline seems to not cross it, but rather cross the entire Earth:</p>
+<p>More in detail, we will demonstrate two simple problems. In the first, we show that a line crossing the dateline seems to not cross it, but rather span the entire Earth:</p>
 <pre><code>&gt; library(sf)
 Linking to GEOS 3.7.0, GDAL 2.3.2, PROJ 5.2.0
 &gt; line = st_as_sfc(&quot;LINESTRING(-179 50, 179 50)&quot;, crs = 4326) # crossing dateline
 &gt; dateline = st_as_sfc(&quot;LINESTRING(180 0, 180 90)&quot;, crs = 4326)
-&gt; st_intersects(line, dateline) # do they cross?
+&gt; st_intersects(line, dateline) # do they cross? No:
 although coordinates are longitude/latitude, st_intersects assumes that they are planar
 Sparse geometry binary predicate list of length 1, where the predicate was `intersects'
  1: (empty)
-&gt; st_bbox(line) # spans the entire Earth:
+&gt; st_bbox(line) # ... but does span the entire Earth:
 xmin ymin xmax ymax
 -179   50  179   50</code></pre>
 <p>In another problem, a polygon spanning the North Pole does not include the pole:</p>
@@ -252,30 +231,30 @@ xmin ymin xmax ymax
 xmin ymin xmax ymax
    0   80  240   80
 &gt; pt = st_as_sfc(&quot;POINT(0 90)&quot;, crs = 4326)
-&gt; st_intersects(pol, pt) # polygon does not include pole?
+&gt; st_intersects(pol, pt) # polygon does not include pole? No:
 although coordinates are longitude/latitude, st_intersects assumes that they are planar
 Sparse geometry binary predicate list of length 1, where the predicate was `intersects'
  1: (empty)</code></pre>
 <p>In both cases warnings are emitted, but answers are plainly wrong.</p>
 <p>Further problems, connected to this are:</p>
 <ul>
-<li>an essential feature of current handling of <em>all</em> spatial data is the <em>bounding box</em>, which is computed by finding the minimum and maximum geodetic coordinate values; on a sphere this box does not yield a region that contains the geometry. The natural definition of a region on a sphere is that of a <em>cap</em>, defined by a center point and a radius (angle).</li>
-<li>having a good measure for the bounding <em>cap</em> is needed to inform the PROJ 6 and the upcoming PROJ 7 library to choose ellipses for more accurate reprojection</li>
-<li>all spatial indexes now provided by <code>sf</code> and <code>stars</code> assume two-dimensional Cartesian coordinates; this also misses connectedness across antimeridian (180 degree West) and poles.</li>
-<li><code>sf::st_graticule</code>, used by all plotting functions including <code>ggplot2::geom_sf</code> is now a fragile function that uses a lot of heuristics; with proper geodetic geometry operations it can be implemented much more robustly</li>
+<li>an essential feature of current handling of <em>all</em> spatial data is the <em>bounding box</em>, which is computed by finding the minimum and maximum geodetic coordinate values; on a sphere this box does not yield a region that contains the geometry. The natural definition of a region on a sphere is that of a <em>cap</em>, defined by a center point and a radius (angle);</li>
+<li>having a good measure for the bounding <em>cap</em> is needed to inform the PROJ 6 and the upcoming PROJ 7 library to choose ellipses for more accurate reprojection;</li>
+<li>all spatial indexes now provided by <code>sf</code> and <code>stars</code> assume two-dimensional Cartesian coordinates; this also misses connectedness across the antimeridian (180 degree West) and the poles;</li>
+<li><code>sf::st_graticule</code>, used by all plotting functions including <code>ggplot2::geom_sf</code> is now a fragile function that uses a lot of heuristics; with proper geodetic geometry operations it can be implemented robustly.</li>
 </ul>
 <p>Previous attempts to this problem include:</p>
 <ul>
-<li>package <code>sf</code> warns the user when it makes the assumption that <em>geodetic</em> coordinates are taken as <em>Cartesian</em> coordinates; for small areas in many cases this is acceptable, but the software doesn’t help distinguishing these cases from those where it is not acceptable.</li>
-<li>package <code>lwgeom</code> extends the <code>sf</code> package with functions found in the geometry engine empowering PostGIS (liblwgeom), and provides several functions that correctly computes ellipsoidal measures (e.g. distance, area); it is used by <code>sf</code> when needed. Liblwgeom is an incomplete implementation of spherical geometries, and does not provide e.g. geodetic unions, intersections or buffers.</li>
+<li>package <code>sf</code> warns the user when it makes the assumption that <em>geodetic</em> coordinates are taken as <em>Cartesian</em> coordinates; for small areas in many cases this is acceptable, but the software doesn’t help distinguishing these cases from those where it is not acceptable;</li>
+<li>package <code>lwgeom</code> extends the <code>sf</code> package with functions found in the geometry engine empowering PostGIS (liblwgeom), and provides several functions that correctly compute ellipsoidal measures (e.g. for distance, area); it is used by <code>sf</code> when needed. Liblwgeom is an incomplete implementation of spherical geometries that does not provide e.g. geodetic unions, intersections or buffers.</li>
 </ul>
 <p>This problem should be tackled because a majority of spatial data users</p>
 <ul>
-<li>now get a warning too often, will start ignoring it, also when it should not be ignored</li>
-<li>are unlikely to properly teach themselves the reprojections currently needed to tackle problems</li>
+<li>now get a warning too often, will start ignoring it, also when it should not be ignored;</li>
+<li>are unlikely to properly teach themselves the reprojections currently needed to tackle these problems;</li>
 <li>will find that modern systems including <a href="https://cloud.google.com/bigquery/docs/gis">BigQuery GIS</a>, <a href="https://maps.google.com">Google Maps</a> or <a href="https://earthengine.google.com/">Google Earth Engine</a> have resolved this problem.</li>
 </ul>
-<p>It should also be tackled because it <em>can</em> be tackled: the library empowering these modern systems, <a href="https://s2geometry.io/">s2geometry</a>, is open source, well maintained and documented, and <a href="https://cran.r-project.org/web/packages/s2/index.html">can be ported to R</a>.</p>
+<p>It should also be tackled because it <em>can</em> be tackled: the library empowering these modern systems, <a href="https://s2geometry.io/"><code>S2 Geometry</code></a>, is open source, well maintained and documented, and <a href="https://cran.r-project.org/web/packages/s2/index.html">can be ported to R</a>.</p>
 </div>
 <div id="the-proposal" class="section level1">
 <h1>The proposal</h1>
@@ -288,7 +267,7 @@ This is where the proposal should be outlined.
 At a high-level address what your proposal is and how it will address the problem identified. Highlight any benefits to the R Community that follow from solving the problem. This should be your most compelling section.
 -->
 <p>R-global will complement the modern R-spatial stack (packages <code>sf</code> for points/lines/polygons and <code>stars</code> for raster data) to correctly handle datasets with geodetic coordinates (degrees longitude/latitude) and no longer require the conversion to appropriate projections for this. This affects the analysis of all datasets that are global as well as local datasets that cover the North or South poles or the antimeridian (the -180 degree meridian). It will also give better results for datasets spanning larger areas, and pave the way for plotting defaults that do not have latitude and longitude as perpendicular axes (but e.g. azimuthal perspective or orthographic projections, those that give the illusion of looking at the Earth from space).</p>
-<p>It will do so by developing an R package that uses the s2geometry open source library to provide all geodetic geometry functions required for this. Packages <code>sf</code> and <code>stars</code> will use this package whenever required.</p>
+<p>It will do so by developing an R package that uses the <code>S2 Geometry</code> open source library to provide all geodetic geometry functions required for this. Packages <code>sf</code> and <code>stars</code> will use this package whenever required.</p>
 </div>
 <div id="detail" class="section level2">
 <h2>Detail</h2>
@@ -303,13 +282,13 @@ Depending on project type the detail section should include:
 -->
 <p>The minimum viable product is an R package that</p>
 <ul>
-<li>uses the <a href="https://s2geometry.io/">s2geometry</a> library to provide functions for <code>st_intersects</code>, <code>st_contains</code>, <code>st_intersection</code>, <code>st_union</code> and all other available binary predicates and geometry operations currently provided by <code>sf</code>, for simple feature geometries having geodetic coordinates,</li>
+<li>uses the <a href="https://s2geometry.io/"><code>S2 Geometry</code></a> library to provide functions for <code>st_intersects</code>, <code>st_contains</code>, <code>st_intersection</code>, <code>st_union</code> and all other binary predicates and geometry operations currently provided by <code>sf</code> and available in <code>S2 Geometry</code>, for simple feature geometries having geodetic coordinates,</li>
 <li>provides an alternative to the handling of bounding boxes for data with geodetic coordinates by using caps (a center point and a radius).</li>
 </ul>
 <p>The architecture will be kept simple:</p>
 <ul>
-<li>C++ functions (using <code>Rcpp</code>) will be written to convert between the <code>s2geometry</code> data structures and R simple feature geometries</li>
-<li><code>Rcpp</code> will be used to write wrapper functions around the <code>s2geomety</code> classes and methods, such that they work on simple feature geometries</li>
+<li>C++ functions (using <code>Rcpp</code>) will be written to convert between the <code>S2 Geometry</code> data structures and R simple feature geometries</li>
+<li><code>Rcpp</code> will be used to write wrapper functions around the <code>S2 Geometry</code> classes and methods, such that they work on simple feature geometries</li>
 <li><code>sf</code> and <code>stars</code> functions will use the new package when it is available, or otherwise emit warnings when appropriate (as they now do)</li>
 <li><code>sf::st_graticule</code> will use the new functionality when available</li>
 </ul>
@@ -328,12 +307,12 @@ Covering the planning phase, this section should provide a relatively detailed p
  - [ ] Licence decisions
  - [ ] Reporting framework
 -->
-<p>The project will run from Jul 1st, 2019 to Apr 1st, 2020. Licence will be all Apache 2.0 (The S2geometry library is also licenced under Apache 2.0).</p>
+<p>The project will run from Jul 1st, 2019 to Apr 1st, 2020. Licence will be all Apache 2.0 (The <code>S2 Geometry</code> library is also licenced under Apache 2.0).</p>
 <p>Regular, quarterly reports will be given to the R Consortium. The user community will be informed by a series of blogs on the <a href="https://www.r-spatial.org/">r-spatial.org</a> blog:</p>
 <ul>
 <li>one blog outlining the project’s ambitions</li>
 <li>at least one blog on progress, halfway the realisation, at moments when more user involvement is sought</li>
-<li>a final blog will report on what has been realised when the project has finished</li>
+<li>a final blog on what has been realised when the project has finished</li>
 </ul>
 </div>
 <div id="technical-delivery" class="section level2">
@@ -343,7 +322,7 @@ Covering the actual delivery of the project this section should provide at least
 
 Including target dates is really important as you need to be committed and the ISC need to have a means of tracking delivery
 -->
-<p>The project will deliver an R package that contains the S2geometry C++ library, and interfaces it to the modern stack of spatial packages (<code>sf</code>, <code>stars</code> and downstream, including <code>ggplot::geom_sf</code>).</p>
+<p>The project will deliver an R package that contains the <code>S2 Geometry</code> C++ library, and interfaces it to the modern stack of spatial packages (<code>sf</code>, <code>stars</code> and downstream, including <code>ggplot::geom_sf</code>).</p>
 </div>
 <div id="other-aspects" class="section level2">
 <h2>Other aspects</h2>
@@ -356,7 +335,7 @@ Covering non-technical activities like on-going publicity, paper preparation, di
  - [ ] UseR!
  - [ ] ISC meetings
 -->
-<p>Blog posts on r-spatial.org will announce and report on progress. Attention to the project will be drawn on Twitter, in particular when new blog posts are published on r-spatial.org. Progress will presented at the UseR! 2020 meeting in Saint Louis or at the rstudio::conf meeting in San Francisco.</p>
+<p>Blog posts on r-spatial.org will announce and report on progress. Attention to the project will be drawn on Twitter, in particular when new blog posts are published on r-spatial.org. Progress will be presented at the UseR! 2020 meeting in Saint Louis or at the 2020 rstudio::conf meeting in San Francisco.</p>
 </div>
 </div>
 <div id="requirements" class="section level1">
@@ -410,7 +389,7 @@ Projects should have a definition of done that is measurable, and a thorough und
 <ul>
 <li>provides comprehensive geodetic geometry operations, addressing the flaws stated in the “problem” section</li>
 <li>provides spatial indexes on the sphere to users of the R packages <code>sf</code> and <code>stars</code></li>
-<li>this project is documented, and blogs on r-spatial.org have informed users about it</li>
+<li>is well documented, and blogs on r-spatial.org and tweets have informed users about it</li>
 </ul>
 <div id="definition-of-done" class="section level2">
 <h2>Definition of done</h2>
@@ -419,8 +398,8 @@ What does success look like?
 -->
 <p>The project is finished when an R package is on CRAN that provides:</p>
 <ul>
-<li>conversion functions from S2geometry classes to and from simple features</li>
-<li>interfaces for R methods to S2geometry geodetic geometry functions</li>
+<li>conversion functions from <code>S2 Geometry</code> classes to and from simple features</li>
+<li>interfaces for R methods to <code>S2 Geometry</code> geodetic geometry functions</li>
 <li>R support for spatial indexes on the spere</li>
 <li>geodetic coordinate support for <code>stars</code> regular, rectilinear, and curvilinear grids</li>
 <li>documentation in the form of package vignettes</li>
@@ -434,7 +413,7 @@ How will we know when success is achieved, what markers can we use along the way
 -->
 <ul>
 <li>The blogs on r-spatial will indicate the project progress</li>
-<li>The R package will be developed on a GitHub repository under the r-spatial organisation, issues and commit messages can be tracked to see the project status</li>
+<li>The R package will be developed on a GitHub repository under the r-spatial organisation, so that issues and commit messages can be tracked to see the project status</li>
 <li>Regular reports to the R consortium will be provided</li>
 </ul>
 </div>
@@ -445,8 +424,9 @@ How could this be extended / developed in the future by yourself and/or the comm
 -->
 <p>We believe that this proposal is an important step in the direction of a modern, coherent and robust ecosystem of R packages for spatial data science. Follow-up steps to which this proposal will positively contribute include:</p>
 <ul>
-<li>improved support for coordinate reference system (following the new features in PROJ 7.0.0 and support of the WKT2 standard by GDAL 2.5.0)</li>
-<li>improved plotting capabilities with more generic and flexible, potentially automatic handling of projections chosen on the fly (e.g. by a virtual globe interface to massive image collections, similar to Google Earth Engine)</li>
+<li>improved support for coordinate reference system (following the new features in PROJ 7.0.0 and support of the WKT2 standard by GDAL 2.5.0);</li>
+<li>improved plotting capabilities with more generic and flexible, potentially automatic handling of projections chosen on the fly (e.g. by a virtual globe interface to massive image collections, similar to Google Earth Engine);</li>
+<li>various spatial analysis packages will be able to benefit from the functionality of the new package, including <code>spatstat</code>, <code>gstat</code> and many others.</li>
 </ul>
 </div>
 <div id="key-risks" class="section level2">
@@ -460,10 +440,10 @@ What sort of things could come up that can delay or break the project?
 -->
 <p>Risks that we can think of now include:</p>
 <ul>
-<li>The S2geometry library has dependencies that are difficult to port to CRAN Windows or OSX</li>
-<li>Mapping simple features to S2geometry data structures will impose difficulties</li>
+<li>The <code>S2 Geometry</code> library has dependencies that are difficult to port to CRAN Windows or OSX</li>
+<li>Mapping simple features to <code>S2 Geometry</code> data structures will impose difficulties</li>
 </ul>
-<p>Both risks should be low-moderate: The s2 CRAN package is a proof of concept for the first, the second one should be overcome by reading documentation and asking questions on the appropriate google group for S2geometry users/developers.</p>
+<p>Both risks should be low-moderate: The s2 package currently on CRAN is a proof of concept for the first, the second one should be overcome by reading documentation and asking questions on the appropriate google group for S2geometry users/developers.</p>
 </div>
 </div>
 
